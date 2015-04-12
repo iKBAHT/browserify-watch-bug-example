@@ -1,5 +1,5 @@
 {
-  "name": "minify-bug-example",
+  "name": "browserify-watch-bug-example",
   "license": "MIT",
   "version": "0.0.1",
   "private": true,
