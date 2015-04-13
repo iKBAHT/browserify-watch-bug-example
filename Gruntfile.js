@@ -1,38 +1,71 @@
+var path = require('path');
+var async = require('async');
+var browserify = require('browserify');
+var watchify = require('watchify');
+
 module.exports = function (grunt) {
 
-  var aliases = [
-    './userInfo.js:user',
-    './lib/trim.js:trim'
-  ];
+  grunt.registerTask('nativeWatch', 'Grunt task for browserify.', function () {
+    var runner = new GruntBrowserifyRunner({
+      grunt: grunt
+    });
+    runner.run([path.resolve("main.js")], "build.js");
 
-  grunt.initConfig({
-    browserify: {
-      watch: {
-        files: {
-          "build.js": ["main.js"]
-        },
-        options: {
-          alias: aliases,
-          watch: true,
-          keepAlive: true,
-          browserifyOptions: {
-            fullPaths: false,
-            //cache: true,
-            debug: true
-          },
-          configure: function (b) {
-            b.on('log', function (info) {
-              console.log(info);
-            });
-          }
-        }
-      }
-    }
+
+    this.async()
   });
 
-  grunt.loadNpmTasks("grunt-browserify");
-
-  grunt.registerTask("watch", [
-    "browserify:watch"
-  ]);
 };
+
+function GruntBrowserifyRunner(options) {
+  this.grunt = options.grunt;
+}
+
+GruntBrowserifyRunner.prototype =  {
+  run: function (files, destination) {
+    //set constructor options and instantiate
+    var bOpts = {
+      fullPaths: false,
+      debug: true,
+      entries: files,
+      cache: {},
+      packageCache: {}
+    };
+
+    var b = watchify(browserify(bOpts), {});
+
+    b.require('./userInfo.js', {expose: 'user'});
+    b.require('./lib/trim.js', {expose: 'trim'});
+
+
+    var bundleUpdate = this.onBundleComplete(destination);
+
+    b.on('update', function (ids) {
+      ids.forEach(function (id) {
+        console.log(id.cyan + ' changed, updating bundle.');
+      });
+      doBundle(b, bundleUpdate);
+    });
+
+    doBundle(b, bundleUpdate);
+  },
+
+  onBundleComplete: function (destination) {
+    var self = this;
+    return function (err, buf) {
+      if (err) {
+        console.log(err);
+      }
+      else if (buf) {
+        console.log('Bundle ' + destination.cyan + ' created. ' + 'Watchifying...');
+        self.grunt.file.write(destination, buf);
+      }
+    };
+  }
+};
+
+function doBundle(browserifyInstance, bundleComplete) {
+  browserifyInstance.bundle(function (err, buf) {
+      bundleComplete(err, buf);
+  });
+}
