@@ -6,9 +6,7 @@
   "devDependencies": {
     "browserify": "~9.0.0",
     "grunt": "~0.4.2",
-    "grunt-browserify": "~3.6.0",
     "grunt-cli": "~0.1.11",
-    "watchify": "^2.5.0",
-    "resolve": "^1.1.6"
+    "watchify": "^2.5.0"
   }
 }

@@ -1,20 +1,16 @@
 var path = require('path');
-var async = require('async');
 var browserify = require('browserify');
 var watchify = require('watchify');
 
 module.exports = function (grunt) {
-
-  grunt.registerTask('nativeWatch', 'Grunt task for browserify.', function () {
+  grunt.registerTask('watch', 'Grunt task for browserify.', function () {
     var runner = new GruntBrowserifyRunner({
       grunt: grunt
     });
     runner.run([path.resolve("main.js")], "build.js");
 
-
     this.async()
   });
-
 };
 
 function GruntBrowserifyRunner(options) {
@@ -23,7 +19,6 @@ function GruntBrowserifyRunner(options) {
 
 GruntBrowserifyRunner.prototype =  {
   run: function (files, destination) {
-    //set constructor options and instantiate
     var bOpts = {
       fullPaths: false,
       debug: true,
@@ -36,7 +31,6 @@ GruntBrowserifyRunner.prototype =  {
 
     b.require('./userInfo.js', {expose: 'user'});
     b.require('./lib/trim.js', {expose: 'trim'});
-
 
     var bundleUpdate = this.onBundleComplete(destination);
 
